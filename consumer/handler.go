@@ -1,15 +1,18 @@
 package main
 
 import (
+	"context"
 	"github.com/gocolly/colly"
+	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // voiture-occasion-renault-kadjar-1-5-blue-dci-115ch-black--FVO16533323.htm
 
-func handleStandalone (url string) {
+func handleStandalone (url string, collection *mongo.Collection) {
 	var a Announce
 
 	domain := "www.autoreflex.com"
@@ -18,6 +21,16 @@ func handleStandalone (url string) {
 		colly.AllowedDomains(domain),
 		colly.MaxDepth(1),
 	)
+
+	// Annouce URL
+	a.URL = "http://" + domain + "/" + url
+
+	// Announce ID
+	c.OnHTML("section[star-id]", func(e *colly.HTMLElement) {
+		announceId := e.Attr("star-id")
+		//fmt.Println(announceId)
+		a.AnnounceId = announceId
+	})
 
 	// Announce title
 	c.OnHTML("div.header", func(e *colly.HTMLElement) {
@@ -55,16 +68,19 @@ func handleStandalone (url string) {
 		garageAddress := e.ChildText("p")
 		// Removes <br> tag
 		garageAddress = strings.Replace(garageAddress, "\n", "", -1)
-		// Removes the 56 spaces before the postal code (no idea they've put 56 blanks here)
+		// Removes the 56 spaces before the postal code (no idea why they've put 56 blanks here)
 		garageAddress = strings.Replace(garageAddress, "                                                        ", " ", -1)
 		//log.Println(garageAddress)
 		a.GarageAddress = garageAddress
 	})
 
+	// Other attributes
 	c.OnHTML("div.specs", func(e *colly.HTMLElement) {
 		//km := e.ChildText("li")
 		attr := e.ChildTexts("li")
 
+		// After testing with numerous standalone pages, it seems that the order of the attributes doesn't change, so
+		// even if it's dirty, we can rely on table indexes to extract attributes for this short example
 		a.CarMileage = attr[0] // KM
 		a.CarFirstRegistration = attr[1]
 		a.AnnouncePostalCode = attr[2]
@@ -77,10 +93,19 @@ func handleStandalone (url string) {
 		}*/
 	})
 
+
 	if err := c.Visit("http://" + domain + "/" + url); err != nil {
 		log.Printf("Error when visiting %s", "http://" + domain + "/" + url)
+	} else {
+		//log.Println(a)
+		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		_, err := collection.InsertOne(ctx, a)
+		if err != nil {
+			log.Panic(err)
+		} else {
+			//log.Println(res)
+		}
 	}
 
-	log.Println(a)
 	//log.Println(url)
 }

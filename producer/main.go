@@ -8,6 +8,8 @@ import (
 )
 
 func main () {
+	pagesToScan := 5
+
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.autoreflex.com"),
 		colly.MaxDepth(1),
@@ -18,8 +20,8 @@ func main () {
 		log.Panic(err)
 	}
 
-	// ./kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic cars
-	topic := "cars"
+	// ./kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic announces
+	topic := "announces"
 
 	defer producer.Close()
 
@@ -32,7 +34,6 @@ func main () {
 				} else {
 					log.Printf("Delivered message to %v\n", ev.TopicPartition)
 				}
-
 			}
 		}
 	} ()
@@ -51,7 +52,7 @@ func main () {
 		}
 	})
 
-	for i := 1; i <= 2; i ++ {
+	for i := 1; i <= pagesToScan; i ++ {
 		err := c.Visit("http://www.autoreflex.com/137.0.-1.-1.-1.0.999999.1900.999999.-1.99.0." + strconv.Itoa(i) + "?fulltext=&geoban=M137R99")
 		if err != nil {
 			log.Panic(err)
