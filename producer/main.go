@@ -1,15 +1,25 @@
 package main
 
 import (
+	"github.com/gocolly/colly"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"log"
+	"strconv"
 )
 
 func main () {
+	c := colly.NewCollector(
+		colly.AllowedDomains("www.autoreflex.com"),
+		colly.MaxDepth(1),
+	)
+
 	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost"})
 	if err != nil {
 		log.Panic(err)
 	}
+
+	// ./kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic cars
+	topic := "cars"
 
 	defer p.Close()
 
@@ -27,15 +37,24 @@ func main () {
 		}
 	} ()
 
-	topic := "cars"
+	// A tr tag which has a star-id attribute corresponds to a car
+	c.OnHTML("tr[star-id]", func(e *colly.HTMLElement){
+		link := e.ChildAttr("a[href]", "href")
+		// log.Printf("%s\n", link)
 
-	for _, msg := range []string{"This", "is", "a", "teseeet"} {
 		err := p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Value: []byte(msg),
+			Value: []byte(link),
 		}, nil)
 		if err != nil {
-			log.Printf("Error when producing %s : %s", msg, err.Error())
+			log.Printf("Error when producing %s : %s", link, err.Error())
+		}
+	})
+
+	for i := 1; i <= 2; i ++ {
+		err := c.Visit("http://www.autoreflex.com/137.0.-1.-1.-1.0.999999.1900.999999.-1.99.0." + strconv.Itoa(i) + "?fulltext=&geoban=M137R99")
+		if err != nil {
+			log.Panic(err)
 		}
 	}
 
