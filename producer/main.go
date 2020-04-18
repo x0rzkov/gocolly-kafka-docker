@@ -13,7 +13,7 @@ func main () {
 		colly.MaxDepth(1),
 	)
 
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost"})
+	producer, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost"})
 	if err != nil {
 		log.Panic(err)
 	}
@@ -21,10 +21,10 @@ func main () {
 	// ./kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic cars
 	topic := "cars"
 
-	defer p.Close()
+	defer producer.Close()
 
 	go func () {
-		for e := range p.Events()  {
+		for e := range producer.Events()  {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
@@ -42,7 +42,7 @@ func main () {
 		link := e.ChildAttr("a[href]", "href")
 		// log.Printf("%s\n", link)
 
-		err := p.Produce(&kafka.Message{
+		err := producer.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Value: []byte(link),
 		}, nil)
@@ -58,5 +58,5 @@ func main () {
 		}
 	}
 
-	p.Flush(15 * 1000)
+	producer.Flush(15 * 1000)
 }

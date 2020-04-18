@@ -1,35 +1,43 @@
 package main
 
 import (
-	"fmt"
-	"github.com/gocolly/colly"
+	"context"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
-	"strconv"
+	"time"
 )
 
 func main () {
-
-
-	log.Println("starting scrapper")
-	c := colly.NewCollector(
-			colly.AllowedDomains("www.autoreflex.com"),
-			colly.MaxDepth(1),
-		)
-
-	c.OnHTML("tr[star-id]", func(e *colly.HTMLElement){
-		//link := e.Attr("star-id")
-		//link := e.Attr("")
-		fmt.Println(e.ChildAttr("a[href]", "href"))
-	})
-
-	for i := 1; i < 5; i ++ {
-		err := c.Visit("http://www.autoreflex.com/137.0.-1.-1.-1.0.999999.1900.999999.-1.99.0." + strconv.Itoa(i) + "?fulltext=&geoban=M137R99")
-		if err != nil {
-			log.Panic(err)
-		}
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	if err != nil {
+		log.Panic(err)
 	}
 
-	log.Println("end")
+	client.StartSession()
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	if err = client.Connect(ctx); err !=nil {
+		log.Panic(err)
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	if err = client.Ping(ctx, readpref.Primary()); err != nil {
+		log.Panic(err)
+	}
+
+	collection := client.Database("reezorcar").Collection("cars")
+	ctx, _ = context.WithTimeout(context.Background(), 5*time.Second)
+	res, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
+	if err != nil {
+		log.Panic(err)
+	}
+	id := res.InsertedID
+	log.Printf("%s", id)
+
+
 }
 
 
