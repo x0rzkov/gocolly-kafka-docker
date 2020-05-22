@@ -1,0 +1,7 @@
+.git
+.git/
+.git/*
+.git/**
+*.tar.gz
+*.zip
+*.md
