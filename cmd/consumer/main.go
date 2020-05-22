@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,9 +18,9 @@ func main() {
 
 	/*** INITIALIZE CONSUMER ***/
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers": "127.0.0.1:9092",
+		"bootstrap.servers": os.Getenv("KAFKA_SERVERS"),
 		"group.id":          "myGroup",
-		"auto.offset.reset": "earliest",
+		//"auto.offset.reset": "earliest",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -31,7 +32,8 @@ func main() {
 	}
 
 	/*** INITIALIZE MONGODB CLIENT ***/
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
+        mongoUri := fmt.Sprintf("mongodb://%s", os.Getenv("MONGO_HOST"))
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoUri))
 	if err != nil {
 		log.Panic(err)
 	}

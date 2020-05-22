@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"strconv"
+	"os"
 
 	"github.com/gocolly/colly/v2"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
@@ -17,7 +18,7 @@ func main() {
 		colly.MaxDepth(1),
 	)
 
-	producer, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "127.0.0.1:9092"})
+	producer, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": os.Getenv("KAFKA_SERVERS")})
 	if err != nil {
 		log.Panic(err)
 	}

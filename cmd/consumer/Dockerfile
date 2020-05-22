@@ -6,20 +6,19 @@ MAINTAINER lucmichalski <michalski.luc@gmail.com>
 COPY . /go/src/github.com/x0rzkov/gocolly-kafka-docker/cmd/consumer
 WORKDIR /go/src/github.com/x0rzkov/gocolly-kafka-docker/cmd/consumer
 
-RUN go install
+RUN go install && ls -l
 
-FROM debian:stable-slim AS runtime
-MAINTAINER lucmichalski <michalski.luc@gmail.com>
+CMD ["go", "run", "main.go", "handler.go", "model.go"]
 
-WORKDIR /opt/lucmichalski/bin
-
+#FROM debian:stable-slim AS runtime
+#MAINTAINER lucmichalski <michalski.luc@gmail.com>
+#WORKDIR /opt/lucmichalski/bin
 # copy executable
-COPY --from=builder /go/bin/consumer /opt/lucmichalski/bin/gocolly-consumer
-
-ENV PATH $PATH:/opt/lucmichalski/bin
+#COPY --from=builder /go/bin/consumer /opt/lucmichalski/bin/gocolly-consumer
+#ENV PATH $PATH:/opt/lucmichalski/bin
 
 # Container configuration
 # EXPOSE 9000
-CMD ["/opt/lucmichalski/bin/gocolly-consumer"]
+#CMD ["/opt/lucmichalski/bin/gocolly-consumer"]
 
 

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/gocolly/colly/v2"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -29,14 +30,14 @@ func handleStandalone(url string, collection *mongo.Collection) {
 	// Announce ID
 	c.OnHTML("section[star-id]", func(e *colly.HTMLElement) {
 		announceId := e.Attr("star-id")
-		//fmt.Println(announceId)
+		fmt.Println(announceId)
 		a.AnnounceId = announceId
 	})
 
 	// Announce title
 	c.OnHTML("div.header", func(e *colly.HTMLElement) {
 		title := e.ChildText("h1")
-		//log.Println(title)
+		log.Println(title)
 		a.Title = title
 	})
 
@@ -46,7 +47,7 @@ func handleStandalone(url string, collection *mongo.Collection) {
 		price = strings.TrimSuffix(price, "€")
 		price = strings.Replace(price, " ", "", -1)
 		n, _ := strconv.Atoi(price)
-		//log.Println(n)
+		log.Println(n)
 		a.Price = n
 	})
 
@@ -56,14 +57,14 @@ func handleStandalone(url string, collection *mongo.Collection) {
 		log.Println(garageName)*/
 
 		phone := e.ChildAttr("a[data-seller-telephone]", "data-seller-telephone")
-		//log.Println(phone)
+		log.Println(phone)
 		a.Phone = phone
 	})
 
 	// Seller name and address
 	c.OnHTML("div.small-12.large-5.columns.mg-bottom", func(e *colly.HTMLElement) {
 		garageName := e.ChildText("h3")
-		//log.Println(garageName)
+		log.Println(garageName)
 		a.GarageName = garageName
 
 		garageAddress := e.ChildText("p")
@@ -101,11 +102,11 @@ func handleStandalone(url string, collection *mongo.Collection) {
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 		_, err := collection.InsertOne(ctx, a)
 		if err != nil {
-			log.Panic(err)
+		   log.Panic(err)
 		} else {
-			//log.Println(res)
+		   // log.Println(res)
 		}
 	}
 
-	//log.Println(url)
+	log.Println(url)
 }

@@ -8,18 +8,16 @@ WORKDIR /go/src/github.com/x0rzkov/gocolly-kafka-docker/cmd/producer
 
 RUN go install
 
-FROM debian:stable-slim AS runtime
-MAINTAINER lucmichalski <michalski.luc@gmail.com>
+CMD ["go", "run", "main.go"]
 
-WORKDIR /opt/lucmichalski/bin
-
+#FROM debian:stable-slim AS runtime
+#MAINTAINER lucmichalski <michalski.luc@gmail.com>
+#WORKDIR /opt/lucmichalski/bin
 # copy executable
-COPY --from=builder /go/bin/producer /opt/lucmichalski/bin/gocolly-producer
-
-ENV PATH $PATH:/opt/lucmichalski/bin
-
+#COPY --from=builder /go/bin/producer /opt/lucmichalski/bin/gocolly-producer
+#ENV PATH $PATH:/opt/lucmichalski/bin
 # Container configuration
 # EXPOSE 9000
-CMD ["/opt/lucmichalski/bin/gocolly-producer"]
+#CMD ["/opt/lucmichalski/bin/gocolly-producer"]
 
 
