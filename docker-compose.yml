@@ -1,5 +1,59 @@
 ---
-version: "3.7"
+version: '3.7'
 services:
 
+  consumer-app:
+    image: x0rzkov/consumer-app:latest-alpine
+    container_name: ${NAMESPACE}-consumer
+    build:
+      context: cmd/consumer
+      dockerfile: Dockerfile
+    #ports:
+    #- 8080:8080
 
+  producer-app:
+    image: x0rzkov/producer-app:latest-alpine
+    container_name: ${NAMESPACE}-producer
+    build:
+      context: cmd/producer
+      dockerfile: Dockerfile
+    #ports:
+    #- 8080:8080  
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.2
+    container_name: ${NAMESPACE}-elastic
+    ports:
+    - 9200:9200
+    - 9300:9300
+    environment:
+      discovery.type: single-node
+
+  zookeeper:
+    image: zookeeper
+    container_name: ${NAMESPACE}-zookeper
+
+  hbase:
+    image: x0rzkov/hbase:1.3.1-alpine
+    container_name: ${NAMESPACE}-hbase
+    build:
+      context: .docker/hbase
+      dockerfile: Dockerfile
+    ports:
+    - 8080:8080
+    - 8085:8085
+
+  kafka:
+    image: x0rzkov/kafka:1.0.0-alpine
+    container_name: ${NAMESPACE}-kafka
+    build:
+      context: .docker/kafka
+      dockerfile: Dockerfile
+    ports:
+    - 9092:9092
+    depends_on:
+    - zookeeper
+
+networks:
+  default:
+    driver: bridge
