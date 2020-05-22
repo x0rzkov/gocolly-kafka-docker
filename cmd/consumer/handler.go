@@ -2,17 +2,18 @@ package main
 
 import (
 	"context"
-	"github.com/gocolly/colly"
-	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gocolly/colly/v2"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // voiture-occasion-renault-kadjar-1-5-blue-dci-115ch-black--FVO16533323.htm
 
-func handleStandalone (url string, collection *mongo.Collection) {
+func handleStandalone(url string, collection *mongo.Collection) {
 	var a Announce
 
 	domain := "www.autoreflex.com"
@@ -54,13 +55,13 @@ func handleStandalone (url string, collection *mongo.Collection) {
 		/*garageName := e.ChildText("a[title]")
 		log.Println(garageName)*/
 
-		phone := e.ChildAttr("a[data-seller-telephone]","data-seller-telephone")
+		phone := e.ChildAttr("a[data-seller-telephone]", "data-seller-telephone")
 		//log.Println(phone)
 		a.Phone = phone
 	})
 
 	// Seller name and address
-	c.OnHTML("div.small-12.large-5.columns.mg-bottom", func (e *colly.HTMLElement) {
+	c.OnHTML("div.small-12.large-5.columns.mg-bottom", func(e *colly.HTMLElement) {
 		garageName := e.ChildText("h3")
 		//log.Println(garageName)
 		a.GarageName = garageName
@@ -93,9 +94,8 @@ func handleStandalone (url string, collection *mongo.Collection) {
 		}*/
 	})
 
-
 	if err := c.Visit("http://" + domain + "/" + url); err != nil {
-		log.Printf("Error when visiting %s", "http://" + domain + "/" + url)
+		log.Printf("Error when visiting %s", "http://"+domain+"/"+url)
 	} else {
 		//log.Println(a)
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)

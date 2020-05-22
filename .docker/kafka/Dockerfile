@@ -1,10 +1,10 @@
 # Dockerfile for Kafka
 FROM alpine:latest
 LABEL Maintainer="James J. Attard <info@jamesattard.com>"
-ARG KAFKA_VERSION=1.0.0
+ARG KAFKA_VERSION=2.5.0
 LABEL Description="Kafka $KAFKA_VERSION"
 
-ENV SCALA_VERSION 2.11
+ENV SCALA_VERSION 2.13
 ENV URL=http://www.us.apache.org/dist/kafka/$KAFKA_VERSION/kafka_$SCALA_VERSION-$KAFKA_VERSION.tgz
 
 WORKDIR /kafka
